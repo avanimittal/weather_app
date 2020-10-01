@@ -1,8 +1,9 @@
-import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'dart:async';
-import 'dart:convert';
+
+import 'package:weatherapp/models/APIResponse.dart';
+import 'package:weatherapp/models/weather.dart';
+import 'package:weatherapp/services/WeatherService.dart';
 
 class Home extends StatefulWidget {
   @override
@@ -10,31 +11,61 @@ class Home extends StatefulWidget {
 }
 
 class _HomeState extends State<Home> {
-var data;
-Future getWeather() async {
-  var response=await http.get(
-      Uri.encodeFull('http://api.openweathermap.org/data/2.5/weather?q=Bareilly&units=metric&appid=a3ad5f5871af6f892541a7f3c9fbe8d8'),
-  );
-  print('Got the data');
-  setState(() {
-    data=jsonDecode(response.body);
+
+
+ final placeName = TextEditingController();
+ APIResponse<WeatherModel> apiResponse;
+ WeatherService weatherService;
+
+ String name;
+ String temp;
+ String tempFelt;
+ String airPressure;
+ String wind;
+ String humidity;
+ String status;
+
+getWeatherDetails(){
+  weatherService.getWeather(placeName.text.toString()).then((value){
+    apiResponse = value;
+    setState(() {
+      name =  apiResponse.data.name;
+      temp = apiResponse.data.temp;
+      status = apiResponse.data.status;
+      tempFelt = apiResponse.data.tempFelt;
+      wind = apiResponse.data.wind;
+      airPressure = apiResponse.data.airPressure;
+      humidity = apiResponse.data.humidity;
+    });
   });
 }
-@override
-  void initState() {
-    super.initState();
-    this.getWeather();
-  }
   @override
   Widget build(BuildContext context) {
-  return data==null? Scaffold(body: Center(child: CircularProgressIndicator(),),):
-      Stack(
+  return Stack(
       fit: StackFit.expand,
       children: [
         Image.network('https://media2.giphy.com/media/Eqz8ZFUScPHH2/giphy.gif',fit: BoxFit.fill,),
         Scaffold(
             backgroundColor:Colors.transparent,
-            appBar: AppBar(backgroundColor:Colors.white,title: Center(child: Text('${data['name']}',style: TextStyle(color: Colors.white),))),
+            appBar: AppBar(
+              leading: Icon(Icons.search,color: Colors.black,),
+                backgroundColor:Colors.white.withOpacity(0.7),
+                title: Center(
+                    child:TextFormField(
+                    decoration: InputDecoration(
+                      border: InputBorder.none,
+                      hintText: "Search for a place"
+                    ),
+                    controller: placeName,
+                  )
+                ),
+              actions: [
+                IconButton(
+                  icon: Icon(Icons.done,color: Colors.black,),
+                  onPressed: getWeatherDetails,
+                )
+              ],
+            ),
             body: ListView(
               children: [
                 Container(
@@ -43,8 +74,8 @@ Future getWeather() async {
                   height: 350.0,
                   child:Column(
                     children: [
-                      Text("${data['main']['temp']}\u00B0",style: TextStyle(color: Colors.white,fontSize: 70.0),),
-                    Text("${data['weather'][0]['main']}",style: TextStyle(color: Colors.white),)],
+                      Text(temp ?? " ",style: TextStyle(color: Colors.white,fontSize: 70.0),),
+                    Text(status ?? " ",style: TextStyle(color: Colors.white),)],
                   ),
                 ),
                 Card(
@@ -53,22 +84,22 @@ Future getWeather() async {
                     child: Column(
                       children: [
                         ListTile(
-                          title:Text("${data['main']['feels_like']}\u00B0",style: TextStyle(color:Theme.of(context).accentColor),),
+                          title:Text(tempFelt ?? " ",style: TextStyle(color:Theme.of(context).accentColor),),
                           subtitle:Text('Temperature Felt',style: TextStyle(color: Colors.white38),),
                           trailing:
                           FaIcon(FontAwesomeIcons.thermometerThreeQuarters,color: Colors.white,),),
                         ListTile(
-                          title:Text("${data['wind']['speed']}m/s",style: TextStyle(color:Theme.of(context).accentColor),),
+                          title:Text(wind ?? " ",style: TextStyle(color:Theme.of(context).accentColor),),
                           subtitle:Text('Northerly Wind',style: TextStyle(color: Colors.white38),),
                           trailing:
                           FaIcon(FontAwesomeIcons.wind,color: Colors.white,),),
                         ListTile(
-                          title:Text("${data['main']['pressure']}hPa",style: TextStyle(color:Theme.of(context).accentColor),),
+                          title:Text(airPressure ?? " ",style: TextStyle(color:Theme.of(context).accentColor),),
                           subtitle:Text('Air Pressure',style: TextStyle(color: Colors.white38),),
                           trailing:
                           FaIcon(FontAwesomeIcons.tachometerAlt,color: Colors.white,),),
                         ListTile(
-                          title:Text("${data['main']['humidity']}%",style: TextStyle(color:Theme.of(context).accentColor),),
+                          title:Text(humidity ?? " ",style: TextStyle(color:Theme.of(context).accentColor),),
                           subtitle:Text('Humidity',style: TextStyle(color: Colors.white38),),
                           trailing: FaIcon(FontAwesomeIcons.tint,color: Colors.white,),),
                       ],
