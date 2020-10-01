@@ -11,7 +11,7 @@ class Home extends StatefulWidget {
 
 class _HomeState extends State<Home> {
 var data;
-Future<String> getWeather() async {
+Future getWeather() async {
   var response=await http.get(
       Uri.encodeFull('http://api.openweathermap.org/data/2.5/weather?q=Bareilly&units=metric&appid=a3ad5f5871af6f892541a7f3c9fbe8d8'),
   );
@@ -34,7 +34,7 @@ Future<String> getWeather() async {
         Image.network('https://media2.giphy.com/media/Eqz8ZFUScPHH2/giphy.gif',fit: BoxFit.fill,),
         Scaffold(
             backgroundColor:Colors.transparent,
-            appBar: AppBar(backgroundColor:Color(0xFF0097A7).withOpacity(0.1),title: Center(child: Text('${data['name']}',style: TextStyle(color: Colors.white),))),
+            appBar: AppBar(backgroundColor:Colors.white,title: Center(child: Text('${data['name']}',style: TextStyle(color: Colors.white),))),
             body: ListView(
               children: [
                 Container(
